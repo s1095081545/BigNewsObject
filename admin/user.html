@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>文章列表</title>
+    <title>大事件-用户信息修改</title>
     <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="css/reset.css">
     <link rel="stylesheet" href="css/iconfont.css">
@@ -68,6 +68,67 @@
             </form>
         </div>
     </div>
+    <!-- 弹窗 -->
+    <div class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span
+                            aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">温馨提示</h4>
+                </div>
+                <div class="modal-body">
+                    <p>body</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <script>
+        $(function () {
+            // 加载用户信息
+            $.ajax({
+                url: "http://localhost:8080/api/v1/admin/user/detail",
+                headers: { Authorization: localStorage.getItem('token') },
+                success: function (response) {
+                    if (response.code === 200) {
+                        console.log(response);
+                        $('input[name="nickname"]').val(response.data.nickname);
+                        $('input[name="email"]').val(response.data.email);
+                        $('input[name="password"]').val(response.data.password);
+                        $('input[name="username"]').val(response.data.username);
+                        $('.user_pic').attr('src', response.data.userPic)
+                    }
+                }
+            });
+            // 修改
+            $('form').on('submit', function (e) {
+                e.preventDefault();
+                const form = document.querySelector('form');
+                const fd = new FormData(form);
+                $.ajax({
+                    type: 'post',
+                    url: "http://localhost:8080/api/v1/admin/user/edit",
+                    data: fd,
+                    contentType: false,
+                    processData: false,
+                    headers: { Authorization: localStorage.getItem('token') },
+                    success: function (response) {
+                        if (response.code === 200) {
+                            location.href='./index.html';
+                        } else {
+                            $('.modal-body p').html('提交失败，请重试');
+                            $('.modal').modal();
+                        }
+                    }
+                });
+
+            });
+        })
+    </script>
 </body>
 
 </html>
