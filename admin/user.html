@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/iconfont.css">
     <link rel="stylesheet" href="css/main.css">
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./js/http.js"></script>
 
 </head>
 
@@ -48,7 +49,7 @@
                         <!-- 给label标签的for属性赋值,值是input标签的id,那这样的话点击label就相当于点击了input -->
                         <br>
                         <label for="exampleInputFile">
-                            <img src="./images/uploads_icon.jpg" style="height: 50px;" alt="">
+                            <img src="./images/uploads_icon.jpg" style="height: 100px;width: 100px;" alt="">
                         </label>
                     </div>
                 </div>
@@ -91,11 +92,10 @@
         $(function () {
             // 加载用户信息
             $.ajax({
-                url: "http://localhost:8080/api/v1/admin/user/detail",
+                url: BigNew.user_detail,
                 headers: { Authorization: localStorage.getItem('token') },
                 success: function (response) {
                     if (response.code === 200) {
-                        console.log(response);
                         $('input[name="nickname"]').val(response.data.nickname);
                         $('input[name="email"]').val(response.data.email);
                         $('input[name="password"]').val(response.data.password);
@@ -111,14 +111,14 @@
                 const fd = new FormData(form);
                 $.ajax({
                     type: 'post',
-                    url: "http://localhost:8080/api/v1/admin/user/edit",
+                    url: BigNew.user_edit,
                     data: fd,
                     contentType: false,
                     processData: false,
                     headers: { Authorization: localStorage.getItem('token') },
                     success: function (response) {
                         if (response.code === 200) {
-                            location.href='./index.html';
+                            parent.location.href='./index.html';
                         } else {
                             $('.modal-body p').html('提交失败，请重试');
                             $('.modal').modal();
@@ -126,6 +126,12 @@
                     }
                 });
 
+            });
+            // 图标图片上传预览
+            $('[name="userPic"]').change(function(){
+               const file=$(this).get(0).files[0];
+               const filePath=URL.createObjectURL(file);
+               $(this).siblings('label').children('img').attr('src',filePath);
             });
         })
     </script>
