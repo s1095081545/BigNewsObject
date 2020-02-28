@@ -14,6 +14,22 @@
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
+    <script src="./js/http.js"></script>
+    <style>
+        .msg{
+            display: none;
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%);
+            width: 200px;
+            height: 40px;
+            line-height: 40px;
+            background-color: rgba(0, 0, 0, .6);
+            text-align: center;
+            color: #fff;
+        }
+    </style>
 </head>
 
 <body>
@@ -51,5 +67,203 @@
             </table>
         </div>
     </div>
+    <!-- 信息框 -->
+    <div class="msg">修改失败，请重试</div>
+    <!-- 弹窗 -->
+<div class="add_modal modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exampleModalLabel">新增分类</h4>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="control-label">名称</label>
+            <input type="text" class="form-control" id="recipient-name" name="name" autocomplete="off" >
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="control-label">slug</label>
+            <input type="text" class="form-control" id="message-text" name="slug" autocomplete="off">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+          <button type="button" class="btn btn-primary submit">提交</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+      </div>
+    </div>
+  </div>
+</div>
+    <!-- 删除提示框 -->
+    <div class="del_modal modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">温馨提示</h4>
+            </div>
+            <div class="modal-body">
+              <p>请确认是否删除</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary yes"> 确认 </button>
+                <button type="button" class="btn btn-default" data-dismiss="modal"> 取消 </button>
+            </div>
+          </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+      </div><!-- /.modal -->
 
+    <!-- 模板 -->
+    <script id="t1" type="text/html">
+{{each data}}
+        <tr>
+            <td class="td_name" >{{$value.name}}</td>
+            <td class="td_slug" >{{$value.slug}}</td>
+            <td class="text-center">
+                <a href="javascript:void(0)" data-toggle="modal" class=" btn btn-info btn-xs edit" data-id="{{$value.id}}">编辑</a>
+                <a href="javascript:void(0)" class="btn btn-danger btn-xs del" data-id="{{$value.id}}">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+
+    <script>
+        $(function(){
+            // 列表显示
+            $.ajax({
+                url:BigNew.category_list,
+                success:function(response){
+                    if(response.code===200){
+                        const html=template('t1',response);
+                        $('tbody').html(html);
+                        
+                    }
+                }
+            });
+            // 新增分类
+            $('#xinzengfenlei').click(function(){
+                $('.submit').removeAttr('disabled');
+                $('.add_modal').modal('show');
+                // 模态框显示出来后执行
+                $('.add_modal').on('shown.bs.modal',function(){
+                    $('[name="name"]').focus();
+
+                })
+
+            });
+            // 新增分类-提交
+            $('.submit').click(function () { 
+                $(this).attr('disabled','true')
+                
+                const name=$('[name="name"]').val().trim();
+                const slug=$('[name="slug"]').val().trim();
+
+                if(!name.length){
+                    $('[name="name"]').focus();
+                    $('.submit').removeAttr('disabled');
+                }else if(!slug.length){
+                    $('[name="slug"]').focus();
+                    $('.submit').removeAttr('disabled');
+                }else{
+                    $.ajax({
+                        type:'post',
+                        url:BigNew.category_add,
+                        data:{
+                            name:name,
+                            slug:slug
+                        },
+                        success:function(response){
+                            if(response.code===201){
+                                $('.add_modal .modal-body').html(`<p>${response.msg}</p>`);
+                            }else{
+                                $('.add_modal .modal-body').html(`<p>创建失败，请重试</p>`);
+                            }
+                            setTimeout(function(){
+                                $('.add_modal').modal('hide');
+                                location.reload();
+                            },1000);
+                            
+                        }
+                    })
+                }
+            });
+            // 编辑
+            $('tbody').on('click','.edit', function () {
+                const td_name=$(this).parents('tr').children('.td_name');
+                const td_slug=$(this).parents('tr').children('.td_slug');
+                if(!this.flag){
+                    // 不存在则编辑
+                    this.flag=1;
+                    $(this).html('确认').removeClass('btn-info').addClass('btn-success');
+                    $(this).parents('tr').addClass('success');
+                    // 设置td可编辑
+                    td_name.attr('contentEditable',true).focus().select();
+                    td_slug.attr('contentEditable',true);
+                }else{
+                    // 存在则提交数据
+                    this.flag=0;
+                    const name=td_name.text().trim();
+                    const slug=td_slug.text().trim();
+                    if(name===''){
+                        td_name.focus();
+                    }else if(slug===''){
+                        td_slug.focus();
+                    }else{
+                        const that=$(this);
+                        const id=$(this).attr('data-id');
+                        $(this).attr('disabled',true);
+                        $.ajax({
+                            type: "post",
+                            url: BigNew.category_edit,
+                            data: {
+                                id:id,
+                                name:name,
+                                slug:slug,
+                            },
+                            success: function (response) {
+                                if(response.code===200){
+                                    $('.msg').html('修改成功').show();
+                                }else{
+                                    $('.msg').html('修改失败，请重试').show();
+                                   
+                                }
+                                setTimeout(function(){
+                                    $('.msg').hide();
+                                    location.reload();
+                                },1000);
+                            }
+                        });
+                    }
+             
+
+                }
+
+                
+                
+            });
+            // 删除
+            $('tbody').on('click','.del',function(){
+                $('.del_modal').modal();
+                const that=$(this);
+                $('.del_modal .yes').click(function(){
+                    const id=that.attr('data-id');
+                    $.ajax({
+                        type: "post",
+                        url: BigNew.category_delete,
+                        data: {id:id},
+                        success: function (response) {
+                            $('.del_modal').modal('hide');
+                                $('.msg').html(response.msg).show();
+                                setTimeout(function(){
+                                    $('.msg').hide();
+                                    location.reload();
+                                },1000);
+                        }
+                    });
+                })
+            })
+        });
+    </script>
 </html>
