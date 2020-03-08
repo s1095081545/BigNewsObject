@@ -12,6 +12,8 @@
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 导入bootstrap的js文件 -->
     <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="./libs/nprogress/nprogress.css" />
+    <script src="./libs/nprogress/nprogress.js"></script>
     <script src="./js/http.js"></script>
     <style>
       .main iframe {
@@ -90,6 +92,24 @@
         <iframe src="./main_count.html" name="main_frame" frameborder="0"></iframe>
       </div>
     </div>
+    <!-- 弹出提示框 -->
+    <div class="confirm_modal modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">温馨提示</h4>
+          </div>
+          <div class="modal-body">
+            <p>One fine body&hellip;</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary hidden">确定</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
     <script>
       $(function() {
@@ -126,10 +146,7 @@
         ) {
           $(this)
             .next()
-            .slideToggle()
-            .children()
-            .eq(0)
-            .addClass("active");
+            .slideToggle();
           $(this)
             .find("b")
             .toggleClass("rotate0");
@@ -137,11 +154,25 @@
       });
       // 左侧二级列表效果
       $(".level02 li").on("click", function() {
+        // 排他
         $(this)
           .addClass("active")
           .siblings()
           .removeClass("active");
+        // 一级菜单高亮
+        $(this)
+          .parents(".level02")
+          .prev(".level01")
+          .addClass("active")
+          .siblings()
+          .removeClass("active");
       });
+      // 点击顶部个人中心，左侧个人中心高亮
+      $(".user_center_link a")
+        .eq(0)
+        .click(function() {
+          $("#user").click();
+        });
     </script>
   </body>
 </html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>right_model</title>
+    <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/iconfont.css" />
+    <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
+    <style>
+      body {
+        background: #f2f3f5;
+      }
+      .w {
+        margin-top: 20px;
+        margin-bottom: 20px;
+      }
+      .btm20{
+          margin-bottom: 20px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="w">
+      <div class="container-fluid">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">文章类别管理</h3>
+          </div>
+          <div class="panel-body">
+            <div class="container-fluid">
+              <div class="row btm20">
+                <div class="row col-sm-6">
+                  <div class="btn-group" role="group" aria-label="...">
+                    <button type="button" class="btn btn-default">
+                      Left
+                    </button>
+                    <button type="button" class="btn btn-default">
+                      Middle
+                    </button>
+                    <button type="button" class="btn btn-default">
+                      Right
+                    </button>
+                  </div>
+                </div>
+                <div class="col-sm-6">
+                  <button type="button" class="btn btn-primary">
+                    （首选项）Primary
+                  </button>
+                  <button type="button" class="btn btn-success">
+                    （成功）Success
+                  </button>
+                </div>
+              </div>
+            </div>
+            <table class="table table-bordered table-hover table-striped">
+              <thead>
+                <tr>
+                  <th>名称</th>
+                  <th>Slug</th>
+                  <th width="100" class="text-center">操作</th>
+                </tr>
+              </thead>
+              <tbody class="">
+                <tr>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                </tr>
+                <tr>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                </tr>
+                <tr>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                </tr>
+                <tr>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                  <td>爱生活</td>
+                </tr>
+              </tbody>
+              <tfoot class="text-center">
+                <tr>
+                  <td colspan="3">
+                    <a class="btn btn-info">尾部</a>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const tr = document.querySelector("tr");
+      console.dir(tr);
+    </script>
+  </body>
+</html>

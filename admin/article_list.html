@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="./css/iconfont.css" />
     <link rel="stylesheet" href="./css/main.css" />
     <script src="./libs/jquery-1.12.4.min.js"></script>
+    <script src="./libs/bootstrap/js/bootstrap.min.js"></script>
     <!-- 引入模板引擎js文件 -->
     <script src="./libs/template-web.js"></script>
     <script src="./js/http.js"></script>
@@ -81,17 +82,208 @@
             </tr>
           </tbody>
         </table>
-        <div class="row text-center"></div>
+        <div class="row text-center">
+          <nav aria-label="Page navigation">
+            <ul class="pagination"></ul>
+          </nav>
+        </div>
       </div>
     </div>
+    <!-- 提示弹窗 -->
+    <div class="confirm modal fade" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+            <h4 class="modal-title">温馨提示</h4>
+          </div>
+          <div class="modal-body">
+            <p>请确认是否删除</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary yes">确认</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              取消
+            </button>
+          </div>
+        </div>
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
 
+    <!-- 分类模板 -->
+    <script id="t_cate" type="text/html">
+      <option value="">所有分类</option>
+      {{each data $v}}
+      <option value="{{$v.id}}">{{$v.name}}</option>
+      {{/each}}
+    </script>
+    <!-- 列表模板 -->
+    <script id="t1" type="text/html">
+      {{each data $v}}
+      <tr>
+        <td>{{$v.title}}</td>
+        <td>{{$v.author}}</td>
+        <td>{{$v.category}}</td>
+        <td class="text-center">{{$v.date}}</td>
+        <td class="text-center">{{$v.state}}</td>
+        <td class="text-center">
+          <a href="article_edit.html?id={{$v.id}}" class="btn btn-default btn-xs"
+            >编辑</a
+          >
+          <a
+            href="javascript:void(0);"
+            class="btn btn-danger btn-xs delete" data-id="{{$v.id}}"
+            >删除</a
+          >
+        </td>
+      </tr>
+      {{/each}}
+    </script>
+    <!-- 分页模板 -->
+    <script id="paging" type="text/html">
+      <li>
+        <a href="javascript:;" aria-label="Previous">
+          <span aria-hidden="true">&laquo;</span>
+        </a>
+      </li>
+      <% for (let i=first;i < first+count;i++) {%>
+      <li class="{{if i===currentPage }} active {{/if}}"><a href="javascript:;">{{ i }}</a></li>
+      <% } %>
+        <li>
+          <a href="javascript:;" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+    </script>
     <script>
       $(function() {
+        let currentPage = 1; //当前页
+        let countPage =10; //每页条数
+        let totalCount, totalPage; //总条数，总页数
+        let cate = ""; //分类
+        let status = ""; //状态
+        // 获取分类
         $.ajax({
+          type: "get",
           url: BigNew.category_list,
           success: function(response) {
-            console.log(response);
+            if (response.code === 200) {
+              const html = template("t_cate", response);
+              $("#selCategory").html(html);
+            }
           }
+        });
+        // 筛选
+        $("#btnSearch").click(function(e) {
+          e.preventDefault();
+          cate = $("#selCategory").val();
+          status = $("#selStatus").val();
+          currentPage = 1;
+          getList();
+        });
+        // 列表显示
+        getList();
+        function getList() {
+          $.ajax({
+            url: BigNew.article_query,
+            data: {
+              key: "",
+              type: cate,
+              state: status,
+              page: currentPage,
+              perpage: countPage
+            },
+            success: function(response) {
+              if (response.code === 200) {
+                totalCount = response.data.totalCount;
+                totalPage = response.data.totalPage;
+                const html = template("t1", response.data);
+                $("tbody").html(html);
+                paging();
+              }
+            }
+          });
+        }
+        // 删除
+        $("tbody").on("click", ".delete", function() {
+          $(".confirm .modal-body p").html("请确认是否删除");
+          $(".confirm .yes").attr("data-id", $(this).attr("data-id"));
+          $(".confirm .modal-footer").show();
+          $(".confirm").modal();
+        });
+        // 弹窗 - 确认删除
+        $(".confirm").on("click", ".yes", function() {
+          $(".confirm .modal-body p").html("删除中...");
+          $(".confirm .modal-footer").hide();
+          $.ajax({
+            type: "post",
+            url: BigNew.article_delete,
+            data: {
+              id: parseInt($(".confirm .yes").attr("data-id"))
+            },
+            success: function(response) {
+              if (response.code === 204) {
+                $(".confirm .modal-body p").html("删除成功");
+                if ($("tbody tr").length === 1) currentPage--;
+                getList();
+              } else {
+                $(".confirm .modal-body p").html("删除失败,请重试1");
+              }
+              console.dir(response)
+
+              // 模态框自动隐藏
+              modalHide();
+            },
+            error: function(res) {
+              console.dir(res)
+              $(".confirm .modal-body p").html("删除失败,请重试");
+              modalHide();
+            }
+          });
+        });
+        // 分页显示效果
+        function paging() {
+          let count = 7; //分页中 显示多少页
+          count = count < totalPage ? count : totalPage;
+          let first = currentPage - Math.floor(count / 2); //开始的页面
+          first = first > 0 ? first : 1;
+          first = totalPage - first >= count ? first : totalPage - count + 1;
+
+          const html = template("paging", {
+            first: first,
+            count: count,
+            currentPage: currentPage
+          });
+          $(".pagination").html(html);
+        }
+        // 分页点击效果
+        $(".pagination").on("click", "a", function() {
+          if ($(this).attr("aria-label") === "Previous") {
+            if (currentPage > 1) {
+              currentPage--;
+            } else {
+              return;
+            }
+          } else if ($(this).attr("aria-label") === "Next") {
+            if (currentPage < totalPage) {
+              currentPage++;
+            } else {
+              return;
+            }
+          } else {
+            currentPage = parseInt($(this).text());
+          }
+          getList();
         });
       });
     </script>

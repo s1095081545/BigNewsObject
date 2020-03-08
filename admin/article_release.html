@@ -1,72 +1,208 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>文章列表</title>
-    <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/reset.css">
-    <link rel="stylesheet" href="css/iconfont.css">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="./libs/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/iconfont.css" />
+    <link rel="stylesheet" href="css/main.css" />
     <!-- jq -->
     <script src="./libs/jquery-1.12.4.min.js"></script>
     <!-- 模板引擎 -->
     <script src="./libs/template-web.js"></script>
-</head>
+    <!-- 时间插件 -->
+    <link rel="stylesheet" href="./libs/jedate/css/jedate.css" />
+    <script src="./libs/jedate/js/jedate.js"></script>
+    <!-- 富文本剪辑器 -->
+    <script src="./libs/tinymce/tinymce.min.js"></script>
+    <script src="./js/http.js"></script>
 
-<body>
+    <script>
+      // 初始化 tinymce 富文本编辑器
+      tinymce.init({
+        // 选择器
+        selector: ".editor",
+        // 高度
+        height: 500,
+        // 语言
+        language: "zh_CN",
+        // 对齐方式
+        directionality: "ltr", // left to right 左对齐
+        // 浏览器单词拼写
+        browser_spellcheck: true,
+        // 右键菜单
+        contextmenu: false,
+        // 插件
+        plugins: [
+          "advlist autolink lists link image charmap print preview anchor",
+          "searchreplace visualblocks code fullscreen",
+          "insertdatetime media table contextmenu paste imagetools wordcount",
+          "code"
+        ],
+        // 工具栏
+        toolbar:
+          "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code"
+      });
+    </script>
+  </head>
+
+  <body>
     <div class="container-fluid">
-        <div class="common_title">
-            文章编辑
-        </div>
-        <div class="container-fluid common_con">
-            <form class="form-horizontal article_form" id="form">
-                <div class="form-group">
-                    <label for="inputTitle" class="col-sm-2 control-label">文章标题：</label>
-                    <div class="col-sm-10">
-                        <input type="text" name="title" class="form-control title" id="inputTitle" value="文章标题文字">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputCover" class="col-sm-2 control-label">文章封面：</label>
-                    <div class="col-sm-10">
-                        <img src="images/pic06.jpg" class="article_cover">
-                        <input name="cover" type="file" id="inputCover">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputCategory" class="col-sm-2 control-label">文章类别：</label>
-                    <div class="col-sm-4">
-                        <select class="form-control category" name="categoryId">
-                            <option>类别一</option>
-                            <option>类别二</option>
-                            <option>类别三</option>
-                            <option selected>类别四</option>
-                            <option>类别五</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label class="col-sm-2 control-label">发布时间：</label>
-                    <div class="col-sm-4">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label for="inputEmail3" class="col-sm-2 control-label">文章内容：</label>
-                    <div class="col-sm-10">
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-success btn-release">发布</button>
-                        <button type="submit" class="btn btn-default btn-draft">存为草稿</button>
-                    </div>
-                </div>
-            </form>
-        </div>
+      <div class="common_title">
+        文章编辑
+      </div>
+      <div class="container-fluid common_con">
+        <form class="form-horizontal article_form" id="form">
+          <div class="form-group">
+            <label for="inputTitle" class="col-sm-2 control-label"
+              >文章标题：</label
+            >
+            <div class="col-sm-10">
+              <input
+                type="text"
+                name="title"
+                class="form-control title"
+                id="inputTitle"
+                value=""
+                placeholder="文章标题文字"
+                autocomplete="off"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputCover" class="col-sm-2 control-label"
+              >文章封面：</label
+            >
+            <div class="col-sm-10">
+              <label for="inputCover">
+                <img src="images/upload.jpg" class="article_cover" />
+              </label>
+              <input name="cover" type="file" id="inputCover" class="hidden" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputCategory" class="col-sm-2 control-label"
+              >文章类别：</label
+            >
+            <div class="col-sm-4">
+              <select class="form-control category" name="categoryId">
+                <option>类别一</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-2 control-label">发布时间：</label>
+            <div class="col-sm-4">
+              <input
+                type="text"
+                name="date"
+                autocomplete="off"
+                class="form-control"
+                id="date"
+                value=""
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="inputEmail3" class="col-sm-2 control-label"
+              >文章内容：</label
+            >
+            <div class="col-sm-10">
+              <div class="editor"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="" class="col-sm-2 control-label"></label>
+            <div class="col-sm-10 ">
+              <p class="error text-danger"></p>
+            </div>
+          </div>
+          <div class="form-group">
+            <div class="col-sm-offset-2 col-sm-10">
+              <button type="submit" class="btn btn-success btn-release">
+                发布
+              </button>
+              <button type="submit" class="btn btn-default btn-draft">
+                存为草稿
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
     </div>
-</body>
 
+    <!-- 模板- 类型 -->
+    <script id="t_cate" type="text/html">
+      {{each data $v}}
+      <option value="{{$v.id}}">{{$v.name}}</option>
+      {{/each}}
+    </script>
+
+    <script>
+      $(function() {
+        // 分类获取
+        $.ajax({
+          type: "get",
+          url: BigNew.category_list,
+          success: function(response) {
+            if (response.code === 200) {
+              const html = template("t_cate", response);
+              $(".category").html(html);
+            }
+          }
+        });
+        // 时间加载
+        jeDate("#date", {
+          isinitVal: true,
+          // !!日期格式
+          format: "YYYY-MM-DD"
+        });
+        // 图片上传预览
+        $("#inputCover").change(function() {
+          const file = this.files[0];
+          const fileUrl = URL.createObjectURL(file);
+          $(".article_cover").attr("src", fileUrl);
+        });
+        // 修改和存草稿
+        $("form").on("click", '[type="submit"]', function(e) {
+          e.preventDefault();
+          if (!$('[name="cover"]')[0].files[0]) {
+            $(".error").html("请上传封面");
+            return;
+          } else if (
+            !$('[name="title"]')
+              .val()
+              .trim()
+          ) {
+            $(".error").html("标题不能为空");
+            return;
+          } else if (!tinymce.activeEditor.getContent().trim()) {
+            $(".error").html("内容不能为空");
+            return;
+          }
+          const fd = new FormData(this.form);
+          fd.append("content", tinymce.activeEditor.getContent());
+          if ($(this).hasClass("btn-release")) fd.append("state", "已发布");
+          $.ajax({
+            type: "post",
+            url: BigNew.article_publish,
+            data: fd,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+              if (response.code === 200) {
+                $(".error").html("添加成功");
+                $("form")[0].reset();
+              } else {
+                $(".error").html("添加失败");
+              }
+            }
+          });
+        });
+      });
+    </script>
+  </body>
 </html>

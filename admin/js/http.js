@@ -1,23 +1,35 @@
 /* 沙箱模式 */
 (function(w) {
-  // 加载NProgress插件
-  const lib = `<link rel="stylesheet" href="./libs/nprogress/nprogress.css">
-    <script src="./libs/nprogress/nprogress.js"></script>`;
-  $("head").append(lib);
-
   // ajax设置
   $.ajaxSetup({
     //   请求头
     headers: { Authorization: localStorage.getItem("token") },
     // 请求开始前
     beforeSend: function() {
-      if (window.NProgress) NProgress.start();
+      if (window.parent.NProgress) parent.NProgress.start();
     },
     // 请求完成后
     complete: function() {
-      if (window.NProgress) NProgress.done();
+      if (window.parent.NProgress) parent.NProgress.done();
+    },
+    error: function(res) {
+      // 没有登录才跳转到登录页
+      if(res.status===0){
+        alert('网络错误，请刷新重试');
+      }else if (res.status === 403) {
+        alert("数据错误，请重新登录");
+        parent.location.href = "./login.html";
+      } else {
+        alert("请求错误，请刷新页面");
+      }
     }
   });
+  // 模态框自动隐藏
+  w.modalHide=function(time=2000){
+    this.setTimeout(function(){
+      $('.modal').modal('hide');
+    },time);
+  }
 
   // 请求地址
   var baseURL = "http://localhost:8080/api/v1";
@@ -37,10 +49,14 @@
     article_search: baseURL + "/admin/article/search", //文章信息查询
     article_edit: baseURL + "/admin/article/edit", //文章编辑
     article_delete: baseURL + "/admin/article/delete", //文章删除
-    comment_list: baseURL + "/admin/comment/search", //文章评论列表
+    comment_search: baseURL + "/admin/comment/search", //文章评论列表
     comment_pass: baseURL + "/admin/comment/pass", //文章评论通过
     comment_reject: baseURL + "/admin/comment/reject", //文章评论不通过
-    comment_delete: baseURL + "/admin/comment/delete" //文章评论删除
+    comment_delete: baseURL + "/admin/comment/delete", //文章评论删除
+    data_info: baseURL + "/admin/data/info", //获取统计数据
+    data_article: baseURL + "/admin/data/article", //日新增文章数量统计
+    data_category: baseURL + "/admin/data/category", //各类型文章数量统计
+    data_visit: baseURL + "/admin/data/visit", //日文章访问量
   };
 
   //暴露接口

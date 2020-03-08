@@ -97,7 +97,7 @@
   </div>
 </div>
     <!-- 删除提示框 -->
-    <div class="del_modal modal fade" tabindex="-1" role="dialog">
+    <div class="confirm_modal modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
           <div class="modal-content">
             <div class="modal-header">
@@ -109,7 +109,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary yes"> 确认 </button>
-                <button type="button" class="btn btn-default" data-dismiss="modal"> 取消 </button>
+                <button type="button" class="btn btn-default no" data-dismiss="modal"> 取消 </button>
             </div>
           </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
@@ -132,16 +132,18 @@
     <script>
         $(function(){
             // 列表显示
-            $.ajax({
+            getList();
+            function getList(){
+                $.ajax({
                 url:BigNew.category_list,
                 success:function(response){
                     if(response.code===200){
                         const html=template('t1',response);
                         $('tbody').html(html);
-                        
                     }
                 }
             });
+            }
             // 新增分类
             $('#xinzengfenlei').click(function(){
                 $('.submit').removeAttr('disabled');
@@ -149,9 +151,7 @@
                 // 模态框显示出来后执行
                 $('.add_modal').on('shown.bs.modal',function(){
                     $('[name="name"]').focus();
-
                 })
-
             });
             // 新增分类-提交
             $('.submit').click(function () { 
@@ -172,22 +172,30 @@
                         url:BigNew.category_add,
                         data:{
                             name:name,
-                            slug:slug
+                            slug :slug,
                         },
                         success:function(response){
-                            if(response.code===201){
-                                $('.add_modal .modal-body').html(`<p>${response.msg}</p>`);
-                            }else{
-                                $('.add_modal .modal-body').html(`<p>创建失败，请重试</p>`);
-                            }
-                            setTimeout(function(){
-                                $('.add_modal').modal('hide');
-                                location.reload();
-                            },1000);
+                            $('.add_modal').modal('hide');
+                            getList();
                             
+                        },
+                        error:function(){
+                            $('.add_modal').modal('hide');
+                            $('.add_modal').on('hidden.bs.modal',function(){
+                                $('.confirm_modal p').html(`<p>创建失败，请重试</p>`);
+                                $('.confirm_modal .no').html('关闭');
+                                $('.confirm_modal .yes').hide();
+                                $('.confirm_modal').modal();
+                                $('.add_modal').off('hidden.bs.modal');
+                            })
+                           
                         }
                     })
                 }
+            });
+            // 增加模态框隐藏时清空
+            $('.add_modal').on('hide.bs.modal',function(){
+                $(this).find('form')[0].reset();
             });
             // 编辑
             $('tbody').on('click','.edit', function () {
@@ -231,7 +239,7 @@
                                 }
                                 setTimeout(function(){
                                     $('.msg').hide();
-                                    location.reload();
+                                    getList();
                                 },1000);
                             }
                         });
@@ -245,25 +253,29 @@
             });
             // 删除
             $('tbody').on('click','.del',function(){
-                $('.del_modal').modal();
-                const that=$(this);
-                $('.del_modal .yes').click(function(){
-                    const id=that.attr('data-id');
+                $('.confirm_modal .modal-body p').html('请确认是否删除');
+                $('.confirm_modal .no').html('取消');
+                $(".confirm_modal .yes").attr('data-id',$(this).attr('data-id'));
+                $('.confirm_modal .yes').show();
+                $('.confirm_modal').modal();
+            });
+            // 弹窗-确认删除
+            $('.confirm_modal .yes').click(function(){
+                    const id=parseInt($(this).attr('data-id'));
                     $.ajax({
                         type: "post",
                         url: BigNew.category_delete,
                         data: {id:id},
                         success: function (response) {
-                            $('.del_modal').modal('hide');
+                            $('.confirm_modal').modal('hide');
                                 $('.msg').html(response.msg).show();
                                 setTimeout(function(){
                                     $('.msg').hide();
-                                    location.reload();
+                                    getList();
                                 },1000);
                         }
                     });
                 })
-            })
         });
     </script>
 </html>
